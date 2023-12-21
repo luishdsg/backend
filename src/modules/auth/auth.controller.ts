@@ -1,24 +1,24 @@
-import { Controller, Post, Body, HttpException, HttpStatus,  Logger, } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Body, Controller, HttpException, HttpStatus, Logger, Post, Res, } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import * as cookie from 'cookie';
 import { LoginUserDto } from 'src/shared/interface/login.dto';
-import { UsersService } from '../users/users.service';
-
+import { AuthService } from './auth.service';
 @ApiTags('auth')
 @Controller('')
 export class AuthController {
   constructor(
-    private  authService: AuthService,
-    ) { }
+    private authService: AuthService,
+  ) { }
   private readonly logger = new Logger(AuthController.name);
 
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Post('login')
-  async login(@Body() login: LoginUserDto) {
+  async login(@Body() login: LoginUserDto, @Res() response: Response) {
     this.logger.debug(`tentou fazer login`);
     try {
-      const token = await this.authService.login(login);
+      const token = await this.authService.login(login,response);
       this.logger.debug(`tentou fazer login${login}`);
       return token;
     } catch (error) {

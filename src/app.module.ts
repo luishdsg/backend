@@ -1,13 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './modules/auth/auth.module';
-import { JwtModule } from './modules/auth/jwt/jwt.module';
 import { PostsModule } from './modules/posts/posts.module';
-
-// const MONGO_API = process.env.MONGO_API + "retryWrites=true&w=majority"
+import { AuthMiddleware } from './modules/auth/middleware/auth.middleware';
 
 @Module({
   imports: [
@@ -15,11 +13,14 @@ import { PostsModule } from './modules/posts/posts.module';
     AuthModule,
     UsersModule,
     PostsModule,
-    JwtModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {
-  
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes(AppController);
+  }
 }

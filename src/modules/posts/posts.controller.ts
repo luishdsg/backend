@@ -6,10 +6,12 @@ import { CreatePostDto } from 'src/shared/interface/create-post.dto';
 import { PostsModel } from './posts.model';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetPostDto } from 'src/shared/interface/get-posts.dto';
-import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 
 @ApiTags('posts')
+@ApiBearerAuth()
+@UseGuards(AuthGuard())
 @Controller('posts')
 export class PostsController {
   constructor(
@@ -18,8 +20,6 @@ export class PostsController {
 
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @HttpPost()
   async create(@Body() createPostDto: CreatePostDto , @Request() req): Promise<PostsModel> {
     const userId = req.user.sub;
