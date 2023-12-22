@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './modules/auth/auth.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { AuthMiddleware } from './modules/auth/middleware/auth.middleware';
+import { ConfigModule } from '../config/config.module';
 
 @Module({
   imports: [
@@ -13,9 +14,12 @@ import { AuthMiddleware } from './modules/auth/middleware/auth.middleware';
     AuthModule,
     UsersModule,
     PostsModule,
+    ConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],
+  exports: [ConfigModule],
+
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
