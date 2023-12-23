@@ -6,12 +6,12 @@ import { CreatePostDto } from 'src/shared/interface/create-post.dto';
 import { PostsModel } from './posts.model';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetPostDto } from 'src/shared/interface/get-posts.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 
 
 @ApiTags('posts')
 @ApiBearerAuth()
-@UseGuards(AuthGuard())
+@UseGuards(JwtAuthGuard)
 @Controller('posts')
 export class PostsController {
   constructor(

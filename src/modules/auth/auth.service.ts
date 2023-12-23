@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserModel } from '../users/user.model'; 
+import { UserModel } from '../users/user.model';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from 'src/shared/interface/login.dto';
@@ -11,8 +11,8 @@ import { UserPayload } from 'src/shared/interface/user-payload.interface';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel('User') 
-    private readonly userModel: Model<UserModel>, 
+    @InjectModel('User')
+    private readonly userModel: Model<UserModel>,
     private readonly jwtService: JwtService,
   ) { }
 

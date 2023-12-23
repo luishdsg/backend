@@ -7,10 +7,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { AuthMiddleware } from './modules/auth/middleware/auth.middleware';
 import { ConfigModule } from '../config/config.module';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
     MongooseModule.forRoot("mongodb+srv://adm:462p0h8fJRzMKLSE@adm.6jacvht.mongodb.net/?retryWrites=true&w=majority"),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     AuthModule,
     UsersModule,
     PostsModule,
