@@ -4,15 +4,12 @@ import { Response } from 'express';
 import * as cookie from 'cookie';
 import { LoginUserDto } from 'src/shared/interface/login.dto';
 import { AuthService } from './auth.service';
-import { ConfigService } from '@nestjs/config';
 
 @ApiTags('auth')
 @Controller('')
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private readonly configService: ConfigService,
-
   ) { }
   private readonly logger = new Logger(AuthController.name);
 
@@ -20,7 +17,7 @@ export class AuthController {
   @ApiOperation({ summary: 'List all items' })
   @Post('login')
   async login(@Body() login: LoginUserDto, @Res() response: Response) {
-    this.logger.debug(`tentou fazer login ${process.env.JWT_SECRET} and ${this.configService.get<string>('PRIVATE_KEY')}`);
+    this.logger.debug(`tentou fazer login`);
     try {
       const token = await this.authService.login(login,response);
       this.logger.debug(`tentou fazer login${login}`);
