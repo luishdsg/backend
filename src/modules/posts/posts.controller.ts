@@ -1,17 +1,14 @@
 // posts/posts.controller.ts
 
-import { Controller, Post as HttpPost, Get, Param, Body, Put, Delete, UseGuards, Request } from '@nestjs/common';
-import { PostsService } from './posts.service';
+import { Body, Controller, Delete, Get, Post as HttpPost, Param, Put, Request } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreatePostDto } from 'src/shared/interface/create-post.dto';
-import { PostsModel } from './posts.model';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetPostDto } from 'src/shared/interface/get-posts.dto';
-import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+import { PostsModel } from './posts.model';
+import { PostsService } from './posts.service';
 
 
 @ApiTags('posts')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('posts')
 export class PostsController {
   constructor(

@@ -9,15 +9,20 @@ import { GetUsersDto } from 'src/shared/interface/get-users.dto';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel('User') 
+    @InjectModel('User')
     private readonly userModel: Model<UserModel>,
-    ) {}
+  ) { }
 
   async createUser(createUserDto: CreateUserDto): Promise<UserModel> {
     const createdAt = new Date();
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const newUser = new this.userModel({ 
+    const newUser = new this.userModel({
       ...createUserDto,
+      photo: "",
+      email: "",
+      birth: "",
+      local: "",
+      lang: "",
       password: hashedPassword,
       createdAt,
     });

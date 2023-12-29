@@ -12,9 +12,5 @@ export class CreateUserDto {
   password: string;
   @IsNotEmpty()
   @ApiProperty()
-  @IsString()
-  gender: string;
-  @IsNotEmpty()
-  @ApiProperty()
   createdAt: Date;
 }

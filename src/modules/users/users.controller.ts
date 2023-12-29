@@ -1,26 +1,23 @@
 import {
-  Get,
   Body,
   Controller,
   Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Logger,
+  NotFoundException,
   Param,
   Post,
   Put,
-  HttpException,
-  HttpStatus,
-  UseGuards,
-  Logger,
-  Request,
-  NotFoundException,
-  UseInterceptors
+  Request
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/shared/interface/create-user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
-import { JwtStrategy } from '../auth/jwt/jwt.strategy';
-import { AuthService } from '../auth/auth.service';
 import { GetUsersDto } from 'src/shared/interface/get-users.dto';
+import { AuthService } from '../auth/auth.service';
+import { JwtStrategy } from '../auth/jwt/jwt.strategy';
+import { UsersService } from './users.service';
 
 
 
@@ -37,6 +34,7 @@ export class UsersController {
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     try {
+      
       const newUser = await this.usersService.createUser(createUserDto);
       return newUser;
     } catch (error) {
