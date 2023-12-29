@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserModel } from './user.model';
@@ -23,7 +23,20 @@ export class UsersService {
     });
     return newUser.save();
   }
-
+  async findByUsername(username: string): Promise<UserModel> {
+    try {
+      const user = await this.userModel.findOne({ username }).exec();
+      if (!user) {
+        throw new NotFoundException(`User with username '${username}' not found`);
+      }
+      return user;
+    } catch (error) {
+      // Log do erro
+      console.error(`Error in findByUsername: ${error.message}`);
+      // Rejeitar o erro para que o controlador possa capturá-lo
+      throw error;
+    }
+  }
   async findAllUsers() {
     return await this.userModel.find().exec();
   }

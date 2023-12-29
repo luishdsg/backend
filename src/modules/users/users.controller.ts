@@ -43,8 +43,24 @@ export class UsersController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
-
-
+  @ApiResponse({ status: 200, description: 'List all items' })
+  @ApiOperation({ summary: 'List all items' })
+  @Get(':username')
+  async findByUsername(@Param('username') username: string) {
+    try {
+      const user = await this.usersService.findByUsername(username);
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        // Tratar usuário não encontrado
+        return { statusCode: 404, message: error.message };
+      }
+      // Log do erro
+      console.error(`Error in findByUsername: ${error.message}`);
+      // Retornar resposta de erro genérica
+      return { statusCode: 500, message: 'Internal server error' };
+    }
+  }
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Get()

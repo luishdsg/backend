@@ -1,7 +1,9 @@
 import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import { Schema } from 'mongoose';
 
 export const UserSchema = new mongoose.Schema({
+  _id: Schema.Types.ObjectId,
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   gender: { type: String, required: true },
@@ -12,6 +14,7 @@ UserSchema.methods.comparePassword = async function (password: string): Promise<
 };
 
 export interface UserModel extends mongoose.Document {
+  _id: Schema.Types.ObjectId;
   username: string;
   password: string;
   gender: string;
