@@ -24,8 +24,11 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     const cookieHeader = cookie.serialize('accessToken', accessToken, { httpOnly: true, maxAge: 60 * 60 * 24, path: '/' });
+    const usernamedata = cookie.serialize('usernamedata', payload.username);
+    response.setHeader('usernamedata', usernamedata);
     response.setHeader('SetCookieToken', cookieHeader);
     response.send({ success: true, accessToken });
+    response.send({ success: true, usernamedata });
   }
   async validateUser(username: string, password: string): Promise<any> {
     this.logger.debug(`Trying to validate user with username: ${username}`);

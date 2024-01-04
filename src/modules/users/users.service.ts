@@ -18,7 +18,7 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const newUser = new this.userModel({
       ...createUserDto,
-      photo: "",
+      photo: "src/assets/img/Efv5SzfU0AATfC9.jpg",
       email: "",
       birth: "",
       local: "",
