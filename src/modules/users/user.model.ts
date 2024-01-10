@@ -47,7 +47,7 @@ UserSchema.methods.comparePassword = async function (password: string): Promise<
 };
 
 export interface UserModel extends mongoose.Document {
-  _id: Schema.Types.ObjectId;
+  _id: string;
   username: string;
   password: string;
   gender?: Gender,

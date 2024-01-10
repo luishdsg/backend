@@ -32,13 +32,12 @@ export class UsersService {
     try {
       const user = await this.userModel.findOne({ username }).exec();
       if (!user) {
-        throw new NotFoundException(`User with username '${username}' not found`);
+        // throw new NotFoundException(`User with username '${username}' not found`);
       }
       return user;
     } catch (error) {
       // Log do erro
       console.error(`Error in findByUsername: ${error.message}`);
-      // Rejeitar o erro para que o controlador possa capturá-lo
       throw error;
     }
   }
@@ -47,7 +46,17 @@ export class UsersService {
   }
 
   async findUserById(id: string): Promise<UserModel> {
-    return await this.userModel.findById(id).exec();
+    console.log(`Trying to find user with ID: ${id}`);
+    try {
+      const userId = await this.userModel.findById(id).exec();
+      if (!userId) {
+        throw new NotFoundException(`User with id '${id}' not found`);
+      }
+      return userId;
+    } catch (error) {
+      console.error(`Error in findById: ${error.message}`);
+      throw error;
+    }
   }
 
   async updateUses(id: string, newUser: GetUsersDto) {

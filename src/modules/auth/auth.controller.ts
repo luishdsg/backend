@@ -20,7 +20,7 @@ export class AuthController {
     this.logger.debug(`tentou fazer login`);
     try {
       const token = await this.authService.login(login,response);
-      this.logger.debug(`tentou fazer login${login}`);
+      this.logger.debug(`tentou fazer login${login}${response}`);
       return token;
     } catch (error) {
       this.logger.error(`Error no login: ${error.message}`);

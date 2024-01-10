@@ -69,9 +69,18 @@ export class UsersController {
 
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.usersService.findUserById(id);
+  @Get('byId/:id')
+  async findUserById(@Param('id') id: string) {
+    try {
+      const userId = await this.usersService.findUserById(id);
+      return userId;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return { statusCode: 404, message: error.message };
+      }
+      console.error(`Error in findByID: ${error.message}`);
+      return { statusCode: 500, message: 'Internal server error' };
+    }
   }
 
 
