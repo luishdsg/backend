@@ -14,31 +14,27 @@ export const UserSchema = new mongoose.Schema({
   lang: { type: String ,required: false},
   posts: [
     {
-      _id: {
-        type: String
-      ,required: false},
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
   ],
   saved: [
     {
-      _id: {
-        type: String
-      ,required: false},
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
   ],
   favorites: [
     {
-      _id: {
-        type: String
-      ,required: false},
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
   ],
   trash: [
     {
-      _id: {
-        type: String
-      ,required: false},
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
   ],
   createdAt: { type: Date, default: Date.now },
 });
@@ -56,10 +52,10 @@ export interface UserModel extends mongoose.Document {
   birth?: string,
   local?: string,
   lang?: string,
-  posts?: string[];
-  saved?: string[];
-  favorites?: string[];
-  trash?: string[];
+  posts?: mongoose.Types.ObjectId[];
+  saved?: mongoose.Types.ObjectId[];
+  favorites?: mongoose.Types.ObjectId[];
+  trash?: mongoose.Types.ObjectId[];
   comparePassword(password: string): Promise<boolean>;
 }
 

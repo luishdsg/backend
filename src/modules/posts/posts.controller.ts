@@ -19,21 +19,7 @@ export class PostsController {
   @ApiOperation({ summary: 'List all items' })
 
   @HttpPost()
-  async create(@Body() createPostDto: CreatePostDto, @Request() req: any): Promise<PostsModel> {
-    // Verifica se req.user está definido
-    if (!req.user) {
-      throw new HttpException('User not authenticated', HttpStatus.UNAUTHORIZED);
-    }
-
-    // Verifica se req.user.sub está definido
-    const userId = req.user.sub;
-    // if (!userId) {
-    //   throw new HttpException(`User fuck ${userId}`, HttpStatus.UNAUTHORIZED);
-    // }
-    console.log(userId + '  falahu aknbaaas')
-
-    createPostDto.userId = userId;
-
+  async create(@Body() createPostDto: CreatePostDto): Promise<PostsModel> {
     try {
       const post = await this._postsService.createPost(createPostDto);
       return post;

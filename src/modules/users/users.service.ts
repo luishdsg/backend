@@ -1,24 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { UserModel } from './user.model';
 import { CreateUserDto } from 'src/shared/interface/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { GetUsersDto } from 'src/shared/interface/get-users.dto';
+import { PostsModel } from '../posts/posts.model';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel('User')
     private readonly userModel: Model<UserModel>,
+    @InjectModel('Post') 
+    private readonly postModel: Model<PostsModel>
   ) { }
+  private readonly logger = new Logger(UsersService.name);
 
   async createUser(createUserDto: CreateUserDto): Promise<UserModel> {
     const createdAt = new Date();
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const newUser = new this.userModel({
       ...createUserDto,
-      photo: "src/assets/img/Efv5SzfU0AATfC9.jpg",
+      photo: process.env.ICON_USER,
       email: "",
       birth: "",
       local: "",
@@ -44,7 +48,6 @@ export class UsersService {
   async findAllUsers() {
     return await this.userModel.find().exec();
   }
-
   async findUserById(id: string): Promise<UserModel> {
     console.log(`Trying to find user with ID: ${id}`);
     try {
@@ -58,12 +61,32 @@ export class UsersService {
       throw error;
     }
   }
-
   async updateUses(id: string, newUser: GetUsersDto) {
     return await this.userModel.findByIdAndUpdate(id, newUser, { new: true });
   }
-
-  async deleteUser(id: string) {
-    return await this.userModel.findByIdAndDelete(id);
+  async deleteUser(userId: string): Promise<void> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.postModel.deleteMany({ userId: userId }).exec();
+    await this.userModel.findByIdAndDelete(userId);
+  }
+  async addPostToUser(userId: mongoose.Schema.Types.ObjectId, postId: Types.ObjectId): Promise<UserModel | null> {
+    try {
+      const user = await this.userModel.findById(userId).exec();
+      if (!user) {
+        throw new Error('Usuário não encontrado');
+      }
+      user.posts.push(postId);
+      const done = await user.save();
+      if(!done){
+        this.logger.debug(`não salvou o id post`);
+      }
+      return user;
+    } catch (error) {
+      console.error(`Erro ao adicionar post ao usuário: ${error.message}`);
+      throw error;
+    }
   }
 }

@@ -5,7 +5,7 @@ import * as mongoose from 'mongoose';
 export const PostsSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
   createdAt: { type: Date, default: Date.now },
-  content: { type: String, required: false },
+  content: { type: String, required: true },
   photo: { type: String, required: false, default: ""},
   tag: { type: String, required: true,  default: ""},
   views: { type: Number, default: 0 },
@@ -16,7 +16,7 @@ export const PostsSchema = new mongoose.Schema({
 });
 
 export interface PostsModel extends mongoose.Document {
-  userId: string;
+  userId: mongoose.Schema.Types.ObjectId;
   createdAt: Date;
   content: string;
   photo: string;
