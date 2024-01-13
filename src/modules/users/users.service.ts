@@ -72,7 +72,7 @@ export class UsersService {
     await this.postModel.deleteMany({ userId: userId }).exec();
     await this.userModel.findByIdAndDelete(userId);
   }
-  async addPostToUser(userId: mongoose.Schema.Types.ObjectId, postId: Types.ObjectId): Promise<UserModel | null> {
+  async addPostToUser(userId: String, postId: Types.ObjectId): Promise<UserModel | null> {
     try {
       const user = await this.userModel.findById(userId).exec();
       if (!user) {

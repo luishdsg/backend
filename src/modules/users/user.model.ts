@@ -14,25 +14,25 @@ export const UserSchema = new mongoose.Schema({
   lang: { type: String ,required: false},
   posts: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Object,
       ref: 'Post',
     },
   ],
   saved: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Object,
       ref: 'Post',
     },
   ],
   favorites: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Object,
       ref: 'Post',
     },
   ],
   trash: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Object,
       ref: 'Post',
     },
   ],
@@ -52,10 +52,10 @@ export interface UserModel extends mongoose.Document {
   birth?: string,
   local?: string,
   lang?: string,
-  posts?: mongoose.Types.ObjectId[];
-  saved?: mongoose.Types.ObjectId[];
-  favorites?: mongoose.Types.ObjectId[];
-  trash?: mongoose.Types.ObjectId[];
+  posts?: Object[];
+  saved?: Object[];
+  favorites?: Object[];
+  trash?: Object[];
   comparePassword(password: string): Promise<boolean>;
 }
 

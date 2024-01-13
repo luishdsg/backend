@@ -10,11 +10,11 @@ export class AuthMiddleware implements NestMiddleware {
   private readonly logger = new Logger(AuthMiddleware.name);
 
   use(req: Request, res: Response, next: NextFunction) {
-    this.logger.debug(`Headers: ${req.headers.authorization}`);
     const authorizationHeader = req.headers.authorization;
   
     if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Token fudido' });
+      return res.status(401).json({ message: 'Token fudido' }), this.logger.debug(`Token fudido: ${req.headers.authorization}`);
+      
     }
    
     const token = authorizationHeader.split(' ')[1];
@@ -23,7 +23,7 @@ export class AuthMiddleware implements NestMiddleware {
       this.logger.debug(`putz: ${user}`);
   
       if (err || !user) {
-        return res.status(401).json({ message: 'Não autorizado' });
+        return res.status(401).json({ message: 'Não autorizado' }), this.logger.debug(`Não autorizado: ${req.headers.authorization}`);
       }
   
       req.user = user;

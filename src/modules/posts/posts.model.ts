@@ -3,7 +3,7 @@
 import * as mongoose from 'mongoose';
 
 export const PostsSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  userId: { type: String, ref: 'User', required: false },
   createdAt: { type: Date, default: Date.now },
   content: { type: String, required: true },
   photo: { type: String, required: false, default: ""},
@@ -16,7 +16,7 @@ export const PostsSchema = new mongoose.Schema({
 });
 
 export interface PostsModel extends mongoose.Document {
-  userId: mongoose.Schema.Types.ObjectId;
+  userId: String;
   createdAt: Date;
   content: string;
   photo: string;

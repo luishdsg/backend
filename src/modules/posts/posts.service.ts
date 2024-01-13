@@ -1,8 +1,8 @@
 // posts/posts.service.ts
 
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { CreatePostDto } from 'src/shared/interface/create-post.dto';
 import { PostsModel } from './posts.model';
 import { GetPostDto } from 'src/shared/interface/get-posts.dto';
@@ -41,6 +41,21 @@ export class PostsService {
 
   async findPostById(id: string): Promise<PostsModel> {
     return await this.postModel.findById(id).exec();
+  }
+
+  async findAllPostById(finduserId: String, page: number,): Promise<any[]> {
+    console.log(`Trying to find user with ID: ${finduserId}`);
+    try {
+      const skipAmount = (page - 1) * 10;
+      const userId = await this.postModel.find({userId: finduserId}).skip(skipAmount).limit(10).exec();
+      if (!userId) {
+        console.error(`Error: ${userId}`);
+      }
+      return userId;
+    } catch (error) {
+      console.error(`Error in findById: ${error.message}`);
+      throw error;
+    }
   }
 
   async updatePost(id:string, newPost: GetPostDto) {
