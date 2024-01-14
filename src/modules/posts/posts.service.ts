@@ -62,7 +62,13 @@ export class PostsService {
     return await this.postModel.findByIdAndUpdate(id, newPost, { new: true });
   }
 
-  async deletePostById(id) {
-    return await this.postModel.findByIdAndDelete(id);
+  async deletePostById(postId: String) {
+    const post = await this.postModel.findById(postId);
+
+    if (!post) {
+      console.error(`Post with ID ${typeof post} not found`);
+    }
+    await post.deleteOne();
+    await this.usersService.updatePostsArray(post.userId ,postId);
   }
 }

@@ -62,7 +62,7 @@ export class PostsController {
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Delete(':id')
-  async delete(@Param('id') id: string) {
+  async delete(@Param('id') id: String) {
     return await this._postsService.deletePostById(id);
   }
 }

@@ -89,4 +89,11 @@ export class UsersService {
       throw error;
     }
   }
+
+  async updatePostsArray(userId: String, postId: String): Promise<void> {
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $pull: { posts: postId } }
+    );
+  }
 }
