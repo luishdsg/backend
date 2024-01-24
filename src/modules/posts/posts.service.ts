@@ -12,13 +12,13 @@ import { UsersService } from '../users/users.service';
 export class PostsService {
   constructor(
     @InjectModel('Post')
-    private readonly postModel: Model<PostsModel>,
+    private readonly _postModel: Model<PostsModel>,
     private readonly usersService: UsersService,
     ) {}
 
   async createPost(createPostDto: CreatePostDto): Promise<PostsModel> {
     try {
-      const createdPost = new this.postModel(createPostDto);
+      const createdPost = new this._postModel(createPostDto);
       console.error(` post: ${createdPost}`);
       try {
         const savedPost = await createdPost.save();
@@ -36,18 +36,34 @@ export class PostsService {
   
 
   async findAllPosts(): Promise<PostsModel[]> {
-    return await this.postModel.find().exec();
+    return await this._postModel.find().exec();
   }
 
+
+  async findAllPostPerPage(page: number): Promise<PostsModel[]> {
+    try {
+      const skipAmount = (page - 1) * 10;
+      const postsPerPage = await this._postModel.find().skip(skipAmount).limit(10).exec();
+      if (!postsPerPage) {
+        console.error(`Error in paginate postsPerPage: ${postsPerPage}`);
+      }
+      return postsPerPage;
+    } catch (error) {
+      console.error(`Error in findById: ${error.message}`);
+      throw error;
+    }
+  }
+
+
   async findPostById(id: string): Promise<PostsModel> {
-    return await this.postModel.findById(id).exec();
+    return await this._postModel.findById(id).exec();
   }
 
   async findAllPostById(finduserId: String, page: number,): Promise<any[]> {
     console.log(`Trying to find user with ID: ${finduserId}`);
     try {
       const skipAmount = (page - 1) * 10;
-      const userId = await this.postModel.find({userId: finduserId}).skip(skipAmount).limit(10).exec();
+      const userId = await this._postModel.find({userId: finduserId}).skip(skipAmount).limit(10).exec();
       if (!userId) {
         console.error(`Error: ${userId}`);
       }
@@ -59,11 +75,11 @@ export class PostsService {
   }
 
   async updatePost(id:string, newPost: GetPostDto) {
-    return await this.postModel.findByIdAndUpdate(id, newPost, { new: true });
+    return await this._postModel.findByIdAndUpdate(id, newPost, { new: true });
   }
 
   async deletePostById(postId: String) {
-    const post = await this.postModel.findById(postId);
+    const post = await this._postModel.findById(postId);
 
     if (!post) {
       console.error(`Post with ID ${typeof post} not found`);

@@ -11,47 +11,42 @@ import { PostsModel } from '../posts/posts.model';
 export class UsersService {
   constructor(
     @InjectModel('User')
-    private readonly userModel: Model<UserModel>,
-    @InjectModel('Post') 
-    private readonly postModel: Model<PostsModel>
+    private readonly _userModel: Model<UserModel>,
+    @InjectModel('Post')
+    private readonly _postModel: Model<PostsModel>
   ) { }
   private readonly logger = new Logger(UsersService.name);
 
   async createUser(createUserDto: CreateUserDto): Promise<UserModel> {
-    const createdAt = new Date();
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const newUser = new this.userModel({
-      ...createUserDto,
-      photo: process.env.ICON_USER,
-      email: "",
-      birth: "",
-      local: "",
-      lang: "",
-      password: hashedPassword,
-      createdAt,
-    });
+    const newUser = new this._userModel({ ...createUserDto, password: hashedPassword, });
     return newUser.save();
   }
   async findByUsername(username: string): Promise<UserModel> {
     try {
-      const user = await this.userModel.findOne({ username }).exec();
+      const user = await this._userModel.findOne({ username }).exec();
       if (!user) {
-        // throw new NotFoundException(`User with username '${username}' not found`);
+        throw new NotFoundException(`User with username '${username}' not found`);
       }
       return user;
     } catch (error) {
-      // Log do erro
       console.error(`Error in findByUsername: ${error.message}`);
       throw error;
     }
   }
+
+
+
   async findAllUsers() {
-    return await this.userModel.find().exec();
+    return await this._userModel.find().exec();
   }
+
+
+
   async findUserById(id: string): Promise<UserModel> {
     console.log(`Trying to find user with ID: ${id}`);
     try {
-      const userId = await this.userModel.findById(id).exec();
+      const userId = await this._userModel.findById(id).exec();
       if (!userId) {
         throw new NotFoundException(`User with id '${id}' not found`);
       }
@@ -61,26 +56,67 @@ export class UsersService {
       throw error;
     }
   }
+
+
   async updateUses(id: string, newUser: GetUsersDto) {
-    return await this.userModel.findByIdAndUpdate(id, newUser, { new: true });
+    return await this._userModel.findByIdAndUpdate(id, newUser, { new: true });
   }
+
+
+  async followUser(followerId: string, followingId: string): Promise<UserModel> {
+    try {
+      const follower = await this._userModel.findById(followerId);
+      const following = await this._userModel.findById(followingId);
+
+      if (!follower || !following) {
+        throw new NotFoundException('Usuário não encontrado');
+      }
+      following.followers.push(followerId);
+      await following.save();
+      follower.following.push(followingId);
+      await follower.save();
+      return;
+    } catch (error) {
+      this.logger.debug(`follow todo deu ruim`);
+    }
+  }
+
+
+
+  async findAllUserPerPage(page: number): Promise<UserModel[]> {
+    try {
+      const skipAmount = (page - 1) * 10;
+      const usersPerPage = await this._userModel.find().skip(skipAmount).limit(10).exec();
+      if (!usersPerPage) {
+        console.error(`Error in paginate usersPerPage: ${usersPerPage}`);
+      }
+      return usersPerPage;
+    } catch (error) {
+      console.error(`Error in findById: ${error.message}`);
+      throw error;
+    }
+  }
+
+
   async deleteUser(userId: string): Promise<void> {
-    const user = await this.userModel.findById(userId).exec();
+    const user = await this._userModel.findById(userId).exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    await this.postModel.deleteMany({ userId: userId }).exec();
-    await this.userModel.findByIdAndDelete(userId);
+    await this._postModel.deleteMany({ userId: userId }).exec();
+    await this._userModel.findByIdAndDelete(userId);
   }
+
+
   async addPostToUser(userId: String, postId: Types.ObjectId): Promise<UserModel | null> {
     try {
-      const user = await this.userModel.findById(userId).exec();
+      const user = await this._userModel.findById(userId).exec();
       if (!user) {
         throw new Error('Usuário não encontrado');
       }
       user.posts.push(postId);
       const done = await user.save();
-      if(!done){
+      if (!done) {
         this.logger.debug(`não salvou o id post`);
       }
       return user;
@@ -91,7 +127,7 @@ export class UsersService {
   }
 
   async updatePostsArray(userId: String, postId: String): Promise<void> {
-    await this.userModel.updateOne(
+    await this._userModel.updateOne(
       { _id: userId },
       { $pull: { posts: postId } }
     );

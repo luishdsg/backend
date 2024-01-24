@@ -16,9 +16,12 @@ export class PostsController {
   constructor(
     private readonly _postsService: PostsService
   ) { }
-  @ApiResponse({ status: 200, description: 'List all items' })
-  @ApiOperation({ summary: 'List all items' })
 
+
+
+
+  @ApiResponse({ status: 200, description: 'Create Post' })
+  @ApiOperation({ summary: 'Create Post' })
   @HttpPost()
   async create(@Body() createPostDto: CreatePostDto): Promise<PostsModel> {
     try {
@@ -37,22 +40,37 @@ export class PostsController {
   async findAll(): Promise<PostsModel[]> {
     return await this._postsService.findAllPosts();
   }
-  @ApiResponse({ status: 200, description: 'List all items' })
-  @ApiOperation({ summary: 'List all items' })
+
+  @ApiResponse({ status: 200, description: 'GEt all users per page' })
+  @ApiOperation({ summary: 'GEt all users per page' })
+  @Get('per-page')
+  async findAllPostPerPage(
+    @Query('page') page: number = 1,
+  ): Promise<PostsModel[]> {
+    return await this._postsService.findAllPostPerPage(page);
+  }
+
+  
+  @ApiResponse({ status: 200, description: 'List by Id' })
+  @ApiOperation({ summary: 'List by Id' })
   @Get(':id')
   async findPostById(@Param('id') id: string): Promise<PostsModel> {
     return await this._postsService.findPostById(id);
   }
+
+
   @ApiResponse({ status: 200, description: 'GEt all posts by id' })
   @ApiOperation({ summary: 'GEt all posts by id' })
   @Get('findByIdUser/:userId')
   async findAllPostById(
     @Param('userId') userId: String,
     @Query('page') page: number = 1,
-    ): Promise<PostsModel[]> {
+  ): Promise<PostsModel[]> {
     console.log('userId:', userId);
-    return await this._postsService.findAllPostById(userId,page);
+    return await this._postsService.findAllPostById(userId, page);
   }
+
+
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Put(':id')

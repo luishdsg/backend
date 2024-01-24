@@ -20,7 +20,7 @@ export class AuthMiddleware implements NestMiddleware {
     const token = authorizationHeader.split(' ')[1];
   
     passport.authenticate('jwt', { session: false }, (err: any, user: any) => {
-      this.logger.debug(`putz: ${user}`);
+      // this.logger.debug(`putz: ${user}`);
   
       if (err || !user) {
         return res.status(401).json({ message: 'Não autorizado' }), this.logger.debug(`Não autorizado: ${req.headers.authorization}`);
