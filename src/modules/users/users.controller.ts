@@ -11,15 +11,17 @@ import {
   Post,
   Put,
   Query,
-  Request
+  Request,
+  UseGuards
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/shared/interface/create-user.dto';
 import { GetUsersDto } from 'src/shared/interface/get-users.dto';
 import { AuthService } from '../auth/auth.service';
 import { JwtStrategy } from '../auth/jwt/jwt.strategy';
 import { UsersService } from './users.service';
 import { UserModel } from './user.model';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 
 
 
@@ -51,7 +53,7 @@ export class UsersController {
 
   @ApiResponse({ status: 200, description: 'List all users by usename' })
   @ApiOperation({ summary: 'List all users by usename' })
-  @Get('/username:username')
+  @Get('username:username')
   async findByUsername(@Param('username') username: string) {
     try {
       const user = await this._usersService.findByUsername(username);
@@ -62,6 +64,18 @@ export class UsersController {
       }
       console.error(`Error in findByUsername: ${error.message}`);
       return { statusCode: 500, message: 'Internal server error' };
+    }
+  }
+
+  @ApiResponse({ status: 200, description: 'GEt following by username' })
+  @ApiOperation({ summary: 'GEt following by username' })
+  @Get('following/:username')
+  async findFollowingByUsername(@Param('username') username: string): Promise<Object[]> {
+    try {
+      const user = await this._usersService.findFollowingByUsername(username);
+      return user;
+    } catch (error) {
+      this.logger.debug(`Followings não encontrados`);
     }
   }
 
@@ -108,18 +122,36 @@ export class UsersController {
   }
 
 
-
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'follow user' })
   @ApiOperation({ summary: 'follow user' })
-  @Post(':followerId/follow/:followingId')
+  @Post(':follower/follow/:followed')
   async followUser(
-    @Param('followerId') followerId: string,
-    @Param('followingId') followingId: string,
-  ): Promise<UserModel> {
+    @Param('follower') follower: string,
+    @Param('followed') followed: string,
+  ): Promise<void> {
     try {
-      return await this._usersService.followUser(followerId, followingId);
+      return await this._usersService.followUser(follower, followed);
     } catch (err) {
       this.logger.debug(`follow de error`);
+      throw err;
+    }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'unfollow user' })
+  @ApiOperation({ summary: 'unfollow user' })
+  @Delete(':unfollower/unfollow/:unfollowed')
+  async unfollowUser(
+    @Param('unfollower') unfollower: string,
+    @Param('unfollowed') unfollowed: string,
+  ): Promise<void> {
+    try {
+      return await this._usersService.unfollowUser(unfollower, unfollowed);
+    } catch (err) {
+      this.logger.debug(`unfollow de error`);
       throw err;
     }
   }
@@ -144,6 +176,8 @@ export class UsersController {
     }
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Delete(':id')

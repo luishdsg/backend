@@ -22,6 +22,8 @@ export class UsersService {
     const newUser = new this._userModel({ ...createUserDto, password: hashedPassword, });
     return newUser.save();
   }
+
+
   async findByUsername(username: string): Promise<UserModel> {
     try {
       const user = await this._userModel.findOne({ username }).exec();
@@ -33,6 +35,15 @@ export class UsersService {
       console.error(`Error in findByUsername: ${error.message}`);
       throw error;
     }
+  }
+
+  async findFollowingByUsername(username: string): Promise<Object[]> {
+    const user = await this._userModel.findOne({ username }).exec();
+    if (!user) {
+      console.error(`Error in findFollowingByUsername`);
+      throw new NotFoundException(`User with username '${username}' not found`);
+    }
+    return user.following;
   }
 
 
@@ -63,24 +74,57 @@ export class UsersService {
   }
 
 
-  async followUser(followerId: string, followingId: string): Promise<UserModel> {
+  async followUser(follower: string, followed: string): Promise<void> {
     try {
-      const follower = await this._userModel.findById(followerId);
-      const following = await this._userModel.findById(followingId);
+      const userfollower = await this._userModel.findById(follower);
+      const userfollowed = await this._userModel.findById(followed);
 
-      if (!follower || !following) {
+      if (!userfollower || !userfollowed) {
         throw new NotFoundException('Usuário não encontrado');
       }
-      following.followers.push(followerId);
-      await following.save();
-      follower.following.push(followingId);
-      await follower.save();
+      userfollowed.followers.push(follower);
+      await userfollowed.save();
+      userfollower.following.push(followed);
+      await userfollower.save();
       return;
     } catch (error) {
       this.logger.debug(`follow todo deu ruim`);
     }
   }
 
+
+  async unfollowUser(unfollower: string, unfollowed: string): Promise<void> {
+    try {
+      const userUnfollower = await this._userModel.findById(unfollower);
+      const userUnfollowed = await this._userModel.findById(unfollowed);
+      if (!userUnfollower || !userUnfollowed) {
+        throw new NotFoundException('Usuário não encontrado');
+      }
+
+      // Verifica se 'following' é um array antes de tentar acessar
+      if (!userUnfollower.following || !Array.isArray(userUnfollower.following)) {
+        throw new NotFoundException('Propriedade "following" inválida no usuário atual');
+      }
+
+      // Verifica se 'followers' é um array antes de tentar acessar
+      if (!userUnfollowed.followers || !Array.isArray(userUnfollowed.followers)) {
+        throw new NotFoundException('Propriedade "followers" inválida no usuário alvo');
+      }
+      // Remove o ID do usuário alvo do array 'following' do usuário atual
+      userUnfollower.following = userUnfollower.following.filter((id) => id !== unfollowed);
+      await userUnfollower.save();
+
+      // Remove o ID do usuário atual do array 'followers' do usuário alvo
+      userUnfollowed.followers = userUnfollowed.followers.filter((id) => id !== unfollower);
+      await userUnfollowed.save();
+
+    } catch (err) {
+      this.logger.debug(`unfollow todo deu ruim`);
+
+    }
+
+
+  }
 
 
   async findAllUserPerPage(page: number): Promise<UserModel[]> {
