@@ -122,10 +122,81 @@ export class UsersService {
       this.logger.debug(`unfollow todo deu ruim`);
 
     }
-
-
   }
 
+  async addToFavorites(userId: string, postId: string): Promise<void> {
+    try {
+      const userAddToFavorites = await this._userModel.findById(userId);
+      if (!userAddToFavorites) throw new NotFoundException('Usuário não encontrado');
+      userAddToFavorites.favorites.push(postId);
+      await userAddToFavorites.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error('Erro ao adicionar post aos favoritos do usuário');
+    }
+  }
+
+  async removeFromFavorites(userId: string, postId: string): Promise<void> {
+    try {
+      const userRemoveFavorites = await this._userModel.findById(userId);
+      if (!userRemoveFavorites) throw new NotFoundException('Usuário não encontrado');
+      userRemoveFavorites.favorites = userRemoveFavorites.favorites.filter((id) => id !== postId);
+      await userRemoveFavorites.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error('Erro ao remover post dos favoritos do usuário');
+    }
+  }
+
+
+
+  async addToHated(userId: string, postId: string): Promise<void> {
+    try {
+      const userAddToHated = await this._userModel.findById(userId);
+      if (!userAddToHated) throw new NotFoundException('Usuário não encontrado');
+      userAddToHated.hated.push(postId);
+      await userAddToHated.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error('Erro ao adicionar post aos favoritos do usuário');
+    }
+  }
+
+  async removeFromHated(userId: string, postId: string): Promise<void> {
+    try {
+      const userRemoveFromHated = await this._userModel.findById(userId);
+      if (!userRemoveFromHated) throw new NotFoundException('Usuário não encontrado');
+      userRemoveFromHated.hated = userRemoveFromHated.hated.filter((id) => id !== postId);
+      await userRemoveFromHated.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error('Erro ao remover post dos favoritos do usuário');
+    }
+  }
+
+  async addToComments(userId: string, postId: string): Promise<void> {
+    try {
+      const userAddToComments = await this._userModel.findById(userId);
+      if (!userAddToComments) throw new NotFoundException('Usuário não encontrado');
+      userAddToComments.comments.push(postId);
+      await userAddToComments.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error('Erro ao adicionar post ao array "comments" do usuário');
+    }
+  }
+  
+  async removeFromComments(userId: string, postId: string): Promise<void> {
+    try {
+      const userRemoveComments = await this._userModel.findById(userId);
+      if (!userRemoveComments) throw new NotFoundException('Usuário não encontrado');
+      userRemoveComments.comments = userRemoveComments.comments.filter(commentId => commentId !== postId);
+      await userRemoveComments.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error('Erro ao remover post do array "comments" do usuário');
+    }
+  }
 
   async findAllUserPerPage(page: number): Promise<UserModel[]> {
     try {
@@ -143,12 +214,16 @@ export class UsersService {
 
 
   async deleteUser(userId: string): Promise<void> {
-    const user = await this._userModel.findById(userId).exec();
-    if (!user) {
-      throw new NotFoundException('User not found');
+    try {
+      const user = await this._userModel.findById(userId).exec();
+      if (!user) throw new NotFoundException('User not found');
+      await this._postModel.deleteMany({ userId: userId }).exec();
+      await this._userModel.findByIdAndDelete(userId);
+    } catch (err) {
+      console.error(`Error in findById: ${err.message}`);
+      throw err;
     }
-    await this._postModel.deleteMany({ userId: userId }).exec();
-    await this._userModel.findByIdAndDelete(userId);
+
   }
 
 

@@ -122,8 +122,8 @@ export class UsersController {
   }
 
 
-  // @ApiBearerAuth()
-  // @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'follow user' })
   @ApiOperation({ summary: 'follow user' })
   @Post(':follower/follow/:followed')
@@ -181,7 +181,12 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return await this._usersService.deleteUser(id);
+  async delete(@Param('id') id: string): Promise<void>  {
+    try {
+      await this._usersService.deleteUser(id);
+    } catch (err) {
+      this.logger.debug(`unfollow de error`);
+      throw err;
+    }
   }
 }

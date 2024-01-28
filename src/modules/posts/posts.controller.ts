@@ -1,6 +1,6 @@
 // posts/posts.controller.ts
 
-import { Body, Controller, Delete, Get, HttpException, Post as HttpPost, HttpStatus, Param, Put, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, Post, HttpStatus, Param, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreatePostDto } from 'src/shared/interface/create-post.dto';
 import { GetPostDto } from 'src/shared/interface/get-posts.dto';
@@ -8,6 +8,7 @@ import { PostsModel } from './posts.model';
 import { PostsService } from './posts.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import mongoose from 'mongoose';
+import { CreateCommentDto } from 'src/shared/interface/create-comment.dto';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('posts')
@@ -22,7 +23,7 @@ export class PostsController {
 
   @ApiResponse({ status: 200, description: 'Create Post' })
   @ApiOperation({ summary: 'Create Post' })
-  @HttpPost()
+  @Post()
   async create(@Body() createPostDto: CreatePostDto): Promise<PostsModel> {
     try {
       const post = await this._postsService.createPost(createPostDto);
@@ -32,6 +33,119 @@ export class PostsController {
       throw new HttpException('Error creating post', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @ApiResponse({ status: 200, description: 'Like and favorite post' })
+  @ApiOperation({ summary: 'Like and favorite post' })
+  @Post(':postId/addLikeAndFavorite/:userId')
+  async addLikeAndFavorite(
+    @Param('postId') postId: string,
+    @Param('userId') userId: string,
+  ): Promise<PostsModel> {
+    try {
+      const postaddLikeAndFavorite = await this._postsService.addLikeAndFavorite(postId, userId);
+      return postaddLikeAndFavorite;
+    } catch (error) {
+      console.error(`Error in addLikeAndFavorite post controller: ${error.message}`);
+      throw new HttpException('Error addLikeAndFavorite post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiResponse({ status: 200, description: 'Hated post' })
+  @ApiOperation({ summary: 'Hated post' })
+  @Post(':postId/addHated/:userId')
+  async addHated(
+    @Param('postId') postId: string,
+    @Param('userId') userId: string,
+  ): Promise<PostsModel> {
+    try {
+      const postaddHated = await this._postsService.addHated(postId, userId);
+      return postaddHated;
+    } catch (error) {
+      console.error(`Error in addHated post controller: ${error.message}`);
+      throw new HttpException('Error addHated post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiResponse({ status: 200, description: 'Delete comments in post' })
+  @ApiOperation({ summary: 'Delete comments in post' })
+  @Post(':postId/addComment/:userId')
+  async addComment(
+    @Param('postId') postId: string,
+    @Param('userId') userId: string,
+    @Body() commentDto: CreateCommentDto,
+  ): Promise<PostsModel> {
+    try {
+      const comment = { userId: commentDto.userId, content: commentDto.content, };
+      const postAddComment = await this._postsService.addComment(postId, userId, comment);
+      return postAddComment
+    } catch (error) {
+      console.error(`Error in addComment post controller: ${error.message}`);
+      throw new HttpException('Error addComment post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get(':postId/comments')
+  async getPostComments(@Param('postId') postId: string): Promise<CreateCommentDto[]> {
+    try {
+      return this._postsService.getPostComments(postId);
+    } catch (error) {
+      console.error(`Error in getPostComments post controller: ${error.message}`);
+      throw new HttpException('Error getPostComments post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @ApiResponse({ status: 200, description: 'Remove Hated post' })
+  @ApiOperation({ summary: 'Remove Hated post' })
+  @Delete(':postId/removeHated/:userId')
+  async removeHated(
+    @Param('postId') postId: string,
+    @Param('userId') userId: string,
+  ): Promise<PostsModel> {
+    try {
+      const postremoveHated = await this._postsService.removeHated(postId, userId);
+      return postremoveHated;
+    } catch (error) {
+      console.error(`Error in removeHated post controller: ${error.message}`);
+      throw new HttpException('Error removeHated post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @ApiResponse({ status: 200, description: 'DisLike and unFavorite post' })
+  @ApiOperation({ summary: 'DisLike and unFavorite post' })
+  @Delete(':postId/removeLikeAndFavorite/:userId')
+  async removeLikeAndFavorite(
+    @Param('postId') postId: string,
+    @Param('userId') userId: string,
+  ): Promise<PostsModel> {
+    try {
+      const postremoveLikeAndFavorite = await this._postsService.removeLikeAndFavorite(postId, userId);
+      return postremoveLikeAndFavorite;
+    } catch (error) {
+      console.error(`Error in removeLikeAndFavorite post controller: ${error.message}`);
+      throw new HttpException('Error removeLikeAndFavorite post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiResponse({ status: 200, description: 'Delete comments in post' })
+  @ApiOperation({ summary: 'Delete comments in post' })
+  @Delete(':postId/removeComment/:userId')
+  async removeComment(
+    @Param('postId') postId: string,
+    @Param('userId') userId: string,
+    @Param('commentId') commentId: string,
+  ): Promise<PostsModel> {
+    try {
+      const postRemoveComment = await this._postsService.removeComment(postId, userId, commentId);
+      return postRemoveComment
+    } catch (error) {
+      console.error(`Error in removeComment post controller: ${error.message}`);
+      throw new HttpException('Error removeComment post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 
 
   @ApiResponse({ status: 200, description: 'List all items' })
@@ -50,7 +164,7 @@ export class PostsController {
     return await this._postsService.findAllPostPerPage(page);
   }
 
-  
+
   @ApiResponse({ status: 200, description: 'List by Id' })
   @ApiOperation({ summary: 'List by Id' })
   @Get(':id')

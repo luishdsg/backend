@@ -12,7 +12,7 @@ export class AuthMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const authorizationHeader = req.headers.authorization;
   
-    if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+    if (!authorizationHeader || !authorizationHeader.startsWith('Bearer')) {
       return res.status(401).json({ message: 'Token fudido' }), this.logger.debug(`Token fudido: ${req.headers.authorization}`);
       
     }

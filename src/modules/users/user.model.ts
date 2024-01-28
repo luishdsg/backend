@@ -22,7 +22,7 @@ export const UserSchema = new mongoose.Schema({
   followers: [
     {
       type: Object,
-      default: 0
+      default: []
     },
   ],
   posts: [
@@ -43,13 +43,19 @@ export const UserSchema = new mongoose.Schema({
       ref: 'Post',
     },
   ],
-  hates: [
+  hated: [
     {
       type: Object,
       ref: 'Post',
     },
   ],
   favorites: [
+    {
+      type: Object,
+      ref: 'Post',
+    },
+  ],
+  comments: [
     {
       type: Object,
       ref: 'Post',
@@ -83,8 +89,9 @@ export interface UserModel extends mongoose.Document {
   block?:  Object[],
   posts?: Object[];
   saved?: Object[];
-  hates?: Object[];
+  hated?: Object[];
   favorites?: Object[];
+  comments?: Object[];
   trash?: Object[];
   comparePassword(password: string): Promise<boolean>;
 }

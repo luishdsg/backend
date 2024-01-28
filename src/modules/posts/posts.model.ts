@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { Comment } from '../../shared/interface/post.interface'
+import { CommentPost } from '../../shared/interface/post.interface'
 export const PostsSchema = new mongoose.Schema({
   userId: { type: String, ref: 'User', required: false },
   createdAt: { type: Date, default: Date.now },
@@ -8,10 +8,20 @@ export const PostsSchema = new mongoose.Schema({
   tag: { type: String, required: true, default: "" },
   saves: { type: Number, default: 0 },
   views: { type: Number, default: 0 },
-  likes: { type: Number, default: 0 },
-  hates: { type: Number, default: 0 },
   reposts: { type: Number, default: 0 },
-  comments: { type: [{ id: String, content: String }], required: true, default: [] },
+  comments: { type: [{ userId: String, content: String }], required: true, default: 0 },
+  likes: [
+    {
+      type: Object,
+      default: 0
+    },
+  ],
+  hated: [
+    {
+      type: Object,
+      default: 0
+    },
+  ],
 });
 
 export interface PostsModel extends mongoose.Document {
@@ -20,10 +30,9 @@ export interface PostsModel extends mongoose.Document {
   content: string;
   photo: string;
   tag: string;
+  likes?: Object[],
+  hated?: Object[],
   views: number;
-  saves: number;
-  likes: number;
-  hates: number;
-  comments: Comment[];
+  comments: CommentPost[];
   reposts: number;
 }
