@@ -9,7 +9,19 @@ export const PostsSchema = new mongoose.Schema({
   saves: { type: Number, default: 0 },
   views: { type: Number, default: 0 },
   reposts: { type: Number, default: 0 },
-  comments: { type: [{ userId: String, content: String }], required: true, default: 0 },
+  comments: {
+    type: [{
+      userId: String,
+      content: String,
+      likes: [
+        {
+          type: Object,
+          default: 0
+        },
+      ],
+      createdAt: { type: Date, default: Date.now },
+    }], required: false, default: 0
+  },
   likes: [
     {
       type: Object,

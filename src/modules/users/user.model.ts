@@ -16,7 +16,7 @@ export const UserSchema = new mongoose.Schema({
   following: [
     {
       type: Object,
-      default: 0
+      default: []
     },
   ],
   followers: [

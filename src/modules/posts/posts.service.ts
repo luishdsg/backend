@@ -8,6 +8,7 @@ import { PostsModel } from './posts.model';
 import { GetPostDto } from 'src/shared/interface/get-posts.dto';
 import { UsersService } from '../users/users.service';
 import { CreateCommentDto } from 'src/shared/interface/create-comment.dto';
+import { CommentPost } from 'src/shared/interface/post.interface';
 
 @Injectable()
 export class PostsService {
@@ -95,8 +96,8 @@ export class PostsService {
     try {
       const postAddComment = await this._postModel.findById(postId);
       if (!postAddComment) throw new NotFoundException('Post não encontrado');
-      const comments = {userId: comment.userId, content: comment.content };
-      postAddComment.comments.push(comments);
+      const newComment = { userId: comment.userId, content: comment.content };
+      postAddComment.comments.push(newComment as any);
       const savePostAddComment = await postAddComment.save();
       await this._usersService.addToComments(userId, postId);
       return savePostAddComment
@@ -123,15 +124,50 @@ export class PostsService {
     }
   }
 
-
-  async getPostComments(postId: string): Promise<CreateCommentDto[]> {
+  async addLikeToComment(postId: string, commentId: string, userId: string,  ): Promise<PostsModel> {
     try {
-      const postGetPostComments = await this._postModel.findById(postId);
-      if (!postGetPostComments) throw new NotFoundException('Post não encontrado');
-      return postGetPostComments.comments;
+      const postAddLikeToComment = await this._postModel.findById(postId);
+      if (!postAddLikeToComment) throw new NotFoundException('Post não encontrado');
+      const comment = postAddLikeToComment.comments.find((comment) => comment._id.toString() === commentId);
+      if (!comment) throw new NotFoundException('Comentário não encontrado');
+      if (!comment.likes.includes(userId)) comment.likes.push(userId);
+      const updatedPost = await postAddLikeToComment.save();
+      return updatedPost;
     } catch (error) {
-      console.error(error);
-      throw new Error('Erro ao obter comentários do post');
+      console.error(`Error in addLikeToComment service: ${error.message}`);
+      throw new Error('Erro ao adicionar like ao comentário do post');
+    }
+  }
+
+
+  async removeLikeFromComment(postId: string, commentId: string, userId: string): Promise<PostsModel> {
+    try {
+      const postRemoveLikeFromComment = await this._postModel.findById(postId);
+      if (!postRemoveLikeFromComment) throw new NotFoundException('Post não encontrado');
+      const comment = postRemoveLikeFromComment.comments.find(comment => comment._id.toString()  === commentId);
+      if (!comment) throw new NotFoundException('Comentário não encontrado');
+      comment.likes = comment.likes.filter((likeUserId) => likeUserId !== userId);
+      const updatedPost = await postRemoveLikeFromComment.save();
+      return updatedPost;
+    } catch (error) {
+      console.error(`Error in removeLikeFromComment service: ${error.message}`);
+      throw new Error('Erro ao remover like do comentário do post');
+    }
+  }
+
+
+  async getPostCommentsPerPage(page: number, postId: string): Promise<CreateCommentDto[]> {
+    try {
+      const skipAmount = (page - 1) * 10;
+      const PostCommentsPerPage = await this._postModel.findById(postId);
+      if (!PostCommentsPerPage) {
+        console.error(`Error in paginate PostCommentsPerPage: ${PostCommentsPerPage}`);
+      }
+      const paginatedComments = PostCommentsPerPage.comments.slice(skipAmount, skipAmount + 10);
+      return paginatedComments;
+    } catch (error) {
+      console.error(`Error in findById: ${error.message}`);
+      throw error;
     }
   }
 
@@ -152,6 +188,19 @@ export class PostsService {
     } catch (error) {
       console.error(`Error in findById: ${error.message}`);
       throw error;
+    }
+  }
+
+  async updateViews(postId: string): Promise<PostsModel> {
+    try {
+      const post = await this._postModel.findById(postId);
+      if (!post) throw new NotFoundException('Post não encontrado');
+      post.views = (post.views || 0) + 1;
+      const updatedPost = await post.save();
+      return updatedPost;
+    } catch (error) {
+      console.error(`Error in updateViews service: ${error.message}`);
+      throw new Error('Erro ao atualizar a contagem de views do post');
     }
   }
 

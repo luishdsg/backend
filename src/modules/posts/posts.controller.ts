@@ -68,8 +68,8 @@ export class PostsController {
   }
 
 
-  @ApiResponse({ status: 200, description: 'Delete comments in post' })
-  @ApiOperation({ summary: 'Delete comments in post' })
+  @ApiResponse({ status: 200, description: 'Add comments in post' })
+  @ApiOperation({ summary: 'Add comments in post' })
   @Post(':postId/addComment/:userId')
   async addComment(
     @Param('postId') postId: string,
@@ -86,15 +86,71 @@ export class PostsController {
     }
   }
 
+  @ApiResponse({ status: 200, description: 'get comments per page' })
+  @ApiOperation({ summary: 'get comments per page' })
   @Get(':postId/comments')
-  async getPostComments(@Param('postId') postId: string): Promise<CreateCommentDto[]> {
+  async getPostComments(
+    @Param('postId') postId: string,
+    @Query('page') page: number = 1,
+    ): Promise<CreateCommentDto[]> {
     try {
-      return this._postsService.getPostComments(postId);
+      return this._postsService.getPostCommentsPerPage(page, postId);
     } catch (error) {
       console.error(`Error in getPostComments post controller: ${error.message}`);
       throw new HttpException('Error getPostComments post', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @ApiResponse({ status: 200, description: 'Contagem de views atualizada com sucesso' })
+  @ApiOperation({ summary: 'Atualiza a contagem de views de um post' })
+  @Put(':postId/updateViews')
+  async updateViews(@Param('postId') postId: string): Promise<PostsModel> {
+    try {
+      const updatedPost = await this._postsService.updateViews(postId);
+      return updatedPost;
+    } catch (error) {
+      console.error(`Error in updateViews controller: ${error.message}`);
+      throw new HttpException('Erro ao atualizar a contagem de views do post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiResponse({ status: 200, description: 'Like adicionado ao comentário do post' })
+  @ApiOperation({ summary: 'Adiciona um like ao comentário do post' })
+  @Put(':postId/addLikeToComment/:commentId/atUser/:userId')
+  async addLikeToComment(
+    @Param('postId') postId: string,
+    @Param('commentId') commentId: string,
+    @Param('userId') userId: string,
+    ): Promise<PostsModel> {
+    try {
+      const updatedPost = await this._postsService.addLikeToComment(postId, commentId, userId);
+      return updatedPost;
+    } catch (error) {
+      console.error(`Error in addLikeToComment controller: ${error.message}`);
+      throw new HttpException('Erro ao adicionar like ao comentário', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiResponse({ status: 200, description: 'Like removido do comentário do post'})
+  @ApiOperation({ summary: 'Remove um like do comentário do post' })
+  @Put(':postId/removeLikeFromComment/:commentId/atUser/:userId')
+  async removeLikeFromComment(
+    @Param('postId') postId: string, 
+    @Param('commentId') commentId: string,
+   @Param('userId') userId: string,
+
+  ): Promise<PostsModel> {
+    try {
+      const updatedPost = await this._postsService.removeLikeFromComment(postId ,commentId,userId );
+      return updatedPost;
+    } catch (error) {
+      console.error(`Error in removeLikeFromComment controller: ${error.message}`);
+      throw new HttpException('Erro ao remover like do comentário do post', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 
   @ApiResponse({ status: 200, description: 'Remove Hated post' })
   @ApiOperation({ summary: 'Remove Hated post' })
@@ -185,12 +241,6 @@ export class PostsController {
   }
 
 
-  @ApiResponse({ status: 200, description: 'List all items' })
-  @ApiOperation({ summary: 'List all items' })
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUser: GetPostDto) {
-    return await this._postsService.updatePost(id, updateUser);
-  }
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Delete(':id')

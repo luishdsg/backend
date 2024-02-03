@@ -22,6 +22,7 @@ import { JwtStrategy } from '../auth/jwt/jwt.strategy';
 import { UsersService } from './users.service';
 import { UserModel } from './user.model';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { GetUserForCommentsDto } from 'src/shared/interface/get-user-for-comments.dto';
 
 
 
@@ -46,6 +47,25 @@ export class UsersController {
       return newUser;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'follow user' })
+  @ApiOperation({ summary: 'follow user' })
+  @Post(':follower/follow/:followed')
+  async followUser(
+    @Param('follower') follower: string,
+    @Param('followed') followed: string,
+  ): Promise<void> {
+    try {
+      return await this._usersService.followUser(follower, followed);
+    } catch (err) {
+      this.logger.debug(`follow de error`);
+      throw err;
     }
   }
 
@@ -97,8 +117,8 @@ export class UsersController {
   }
 
 
-  @ApiResponse({ status: 200, description: 'List all items' })
-  @ApiOperation({ summary: 'List all items' })
+  @ApiResponse({ status: 200, description: 'List users by id' })
+  @ApiOperation({ summary: 'List users by id' })
   @Get('byId/:id')
   async findUserById(@Param('id') id: string) {
     try {
@@ -113,46 +133,17 @@ export class UsersController {
     }
   }
 
-
-  @ApiResponse({ status: 200, description: 'Update follow user' })
-  @ApiOperation({ summary: 'Update follow user' })
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUser: GetUsersDto) {
-    return await this._usersService.updateUses(id, updateUser);
-  }
-
-
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiResponse({ status: 200, description: 'follow user' })
-  @ApiOperation({ summary: 'follow user' })
-  @Post(':follower/follow/:followed')
-  async followUser(
-    @Param('follower') follower: string,
-    @Param('followed') followed: string,
-  ): Promise<void> {
+  @ApiResponse({ status: 200, description: 'Find User By Id For Comments' })
+  @ApiOperation({ summary: 'Find User By Id For Comments' })
+  @Get('forComments/:id')
+  async findUserByIdForComments(@Param('id') id: string): Promise<GetUserForCommentsDto> {
     try {
-      return await this._usersService.followUser(follower, followed);
-    } catch (err) {
-      this.logger.debug(`follow de error`);
-      throw err;
-    }
-  }
-
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiResponse({ status: 200, description: 'unfollow user' })
-  @ApiOperation({ summary: 'unfollow user' })
-  @Delete(':unfollower/unfollow/:unfollowed')
-  async unfollowUser(
-    @Param('unfollower') unfollower: string,
-    @Param('unfollowed') unfollowed: string,
-  ): Promise<void> {
-    try {
-      return await this._usersService.unfollowUser(unfollower, unfollowed);
-    } catch (err) {
-      this.logger.debug(`unfollow de error`);
-      throw err;
+      const userIdForComments = await this._usersService.findUserByIdForComments(id);
+      return {_id: userIdForComments._id,username: userIdForComments.username,photo: userIdForComments.photo,};
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException('Usuário não encontrado');
+      }
     }
   }
 
@@ -175,6 +166,60 @@ export class UsersController {
       throw error;
     }
   }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Post salvo nos favoritos do usuário',})
+  @ApiOperation({ summary: 'Salva um post nos favoritos do usuário' })
+  @Put(':userId/savePost/:postId')
+  async savePostToSaved(
+    @Param('userId') userId: string,
+    @Param('postId') postId: string,
+  ): Promise<UserModel> {
+    try {
+      const updatedUser = await this._usersService.savePostToSaved(userId, postId);
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error in savePostToSaved controller: ${error.message}`);
+      throw new HttpException('Erro ao salvar o post nos favoritos do usuário', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiResponse({ status: 200, description: 'Post removido dos favoritos do usuário'})
+  @ApiOperation({ summary: 'Remove um post dos favoritos do usuário' })
+  @Put(':userId/removePost/:postId')
+  async removePostFromSaved(
+    @Param('userId') userId: string,
+    @Param('postId') postId: string,
+  ): Promise<UserModel> {
+    try {
+      const updatedUser = await this._usersService.removePostFromSaved(userId, postId);
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error in removePostFromSaved controller: ${error.message}`);
+      throw new HttpException('Erro ao remover o post dos favoritos do usuário', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'unfollow user' })
+  @ApiOperation({ summary: 'unfollow user' })
+  @Delete(':unfollower/unfollow/:unfollowed')
+  async unfollowUser(
+    @Param('unfollower') unfollower: string,
+    @Param('unfollowed') unfollowed: string,
+  ): Promise<void> {
+    try {
+      return await this._usersService.unfollowUser(unfollower, unfollowed);
+    } catch (err) {
+      this.logger.debug(`unfollow de error`);
+      throw err;
+    }
+  }
+
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)

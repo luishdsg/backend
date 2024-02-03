@@ -6,6 +6,7 @@ import { CreateUserDto } from 'src/shared/interface/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { GetUsersDto } from 'src/shared/interface/get-users.dto';
 import { PostsModel } from '../posts/posts.model';
+import { GetUserForCommentsDto } from 'src/shared/interface/get-user-for-comments.dto';
 
 @Injectable()
 export class UsersService {
@@ -68,10 +69,20 @@ export class UsersService {
     }
   }
 
-
-  async updateUses(id: string, newUser: GetUsersDto) {
-    return await this._userModel.findByIdAndUpdate(id, newUser, { new: true });
+  async findUserByIdForComments(id: string): Promise<GetUserForCommentsDto | null> {
+    console.log(`Trying to find user with ID: ${id}`);
+    try {
+      const userIdForComments = await this._userModel.findById(id).exec();
+      if (!userIdForComments) {
+        throw new NotFoundException(`User with id '${id}' not found`);
+      }
+      return {_id: userIdForComments._id,username: userIdForComments.username,photo: userIdForComments.photo,}
+    } catch (error) {
+      console.error(`Error in findById: ${error.message}`);
+      throw error;
+    }
   }
+
 
 
   async followUser(follower: string, followed: string): Promise<void> {
@@ -211,6 +222,34 @@ export class UsersService {
       throw error;
     }
   }
+
+  async savePostToSaved(userId: string, postId: string): Promise<UserModel> {
+    try {
+      const user = await this._userModel.findById(userId);
+      if (!user) throw new NotFoundException('Usuário não encontrado');
+      if (!user.saved.includes(postId)) user.saved.push(postId);
+      const updatedUser = await user.save();
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error in savePostToSaved service: ${error.message}`);
+      throw new Error('Erro ao salvar o post nos favoritos do usuário');
+    }
+  }
+
+  async removePostFromSaved(userId: string, postId: string): Promise<UserModel> {
+    try {
+      const user = await this._userModel.findById(userId);
+      if (!user) throw new NotFoundException('Usuário não encontrado');
+      user.saved = user.saved.filter(savedPostId => savedPostId !== postId);
+      const updatedUser = await user.save();
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error in removePostFromSaved service: ${error.message}`);
+      throw new Error('Erro ao remover o post dos favoritos do usuário');
+    }
+  }
+
+
 
 
   async deleteUser(userId: string): Promise<void> {
