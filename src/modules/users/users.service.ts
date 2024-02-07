@@ -250,6 +250,61 @@ export class UsersService {
   }
 
 
+  async addUserToBlockList(userId: string, blockUserId: string): Promise<UserModel> {
+    try {
+      const userAddUserToBlockList = await this._userModel.findById(userId);
+      if (!userAddUserToBlockList) throw new NotFoundException('Usuário não encontrado');
+      if (!userAddUserToBlockList.block.includes(blockUserId)) userAddUserToBlockList.block.push(blockUserId);
+      const updatedUserBlocked = await userAddUserToBlockList.save();
+      return updatedUserBlocked;
+    } catch (error) {
+      console.error(`Error in addUserToBlockList service: ${error.message}`);
+      throw new Error('Erro ao adicionar usuário à lista de bloqueados');
+    }
+  }
+
+
+
+  async removeUserFromBlockList(userId: string, unblockUserId: string): Promise<UserModel> {
+    try {
+      const userRemoveUserFromBlockList = await this._userModel.findById(userId);
+      if (!userRemoveUserFromBlockList) throw new NotFoundException('Usuário não encontrado');
+      userRemoveUserFromBlockList.block = userRemoveUserFromBlockList.block.filter((blockedUserId) => blockedUserId !== unblockUserId);
+      const updatedUserUnBlocked = await userRemoveUserFromBlockList.save();
+      return updatedUserUnBlocked;
+    } catch (error) {
+      console.error(`Error in addUserToBlockList service: ${error.message}`);
+      throw new Error('Erro ao adicionar usuário à lista de bloqueados');
+    }
+  }
+
+
+  async getBlockedUsers(userId: string): Promise<string[]> {
+    try {
+      const userGetBlockedUsers = await this._userModel.findById(userId);
+      if (!userGetBlockedUsers) throw new NotFoundException('Usuário não encontrado');
+      const blockedUserIds = userGetBlockedUsers.block.map(String);
+      return blockedUserIds;
+    } catch (error) {
+      console.error(`Error in getBlockedUsers service: ${error.message}`);
+      throw new Error('Erro ao obter a lista de usuários bloqueados');
+    }
+  }
+
+
+
+  async getBlockedUserIds(userId: string): Promise<string[]> {
+    try {
+      const userGetBlockedUserIds = await this._userModel.findById(userId);
+      if (!userGetBlockedUserIds) throw new NotFoundException('Usuário não encontrado');
+      const blockedUserIds = userGetBlockedUserIds.block.map(String);
+      return blockedUserIds;
+    } catch (error) {
+      console.error(`Error in getBlockedUserIds service: ${error.message}`);
+      throw new Error('Erro ao obter a lista de IDs de usuários bloqueados');
+    }
+  }
+
 
 
   async deleteUser(userId: string): Promise<void> {

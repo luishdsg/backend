@@ -69,6 +69,13 @@ export class UsersController {
     }
   }
 
+  @ApiResponse({ status: 200, description: 'List all Users' })
+  @ApiOperation({ summary: 'List all Users' })
+  @Get()
+  async findAll() {
+    return await this._usersService.findAllUsers();
+  }
+
 
 
   @ApiResponse({ status: 200, description: 'List all users by usename' })
@@ -87,6 +94,9 @@ export class UsersController {
     }
   }
 
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'GEt following by username' })
   @ApiOperation({ summary: 'GEt following by username' })
   @Get('following/:username')
@@ -99,14 +109,40 @@ export class UsersController {
     }
   }
 
-
-  @ApiResponse({ status: 200, description: 'List all Users' })
-  @ApiOperation({ summary: 'List all Users' })
-  @Get()
-  async findAll() {
-    return await this._usersService.findAllUsers();
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Lista de IDs de usuários bloqueados'})
+  @ApiOperation({ summary: 'Obtém a lista de IDs de usuários bloqueados' })
+  @Get(':userId/blockedUserIds')
+  async getBlockedUserIds(@Param('userId') userId: string): Promise<string[]> {
+    try {
+      const blockedUserIds = await this._usersService.getBlockedUserIds(userId);
+      return blockedUserIds;
+    } catch (error) {
+      console.error(`Error in getBlockedUserIds controller: ${error.message}`);
+      throw new HttpException('Erro ao obter a lista de IDs de usuários bloqueados', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Lista de usuários bloqueados' })
+  @ApiOperation({ summary: 'Obtém a lista de usuários bloqueados' })
+  @Get(':userId/blockedUsers')
+  async getBlockedUsers(@Param('userId') userId: string): Promise<string[]> {
+    try {
+      const blockedUsers = await this._usersService.getBlockedUsers(userId);
+      return blockedUsers;
+    } catch (error) {
+      console.error(`Error in getBlockedUsers controller: ${error.message}`);
+      throw new HttpException('Erro ao obter a lista de usuários bloqueados', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'GEt all users per page' })
   @ApiOperation({ summary: 'GEt all users per page' })
   @Get('per-page')
@@ -133,19 +169,23 @@ export class UsersController {
     }
   }
 
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'Find User By Id For Comments' })
   @ApiOperation({ summary: 'Find User By Id For Comments' })
   @Get('forComments/:id')
   async findUserByIdForComments(@Param('id') id: string): Promise<GetUserForCommentsDto> {
     try {
       const userIdForComments = await this._usersService.findUserByIdForComments(id);
-      return {_id: userIdForComments._id,username: userIdForComments.username,photo: userIdForComments.photo,};
+      return { _id: userIdForComments._id, username: userIdForComments.username, photo: userIdForComments.photo, };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException('Usuário não encontrado');
       }
     }
   }
+
 
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
@@ -169,7 +209,7 @@ export class UsersController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @ApiResponse({ status: 200, description: 'Post salvo nos favoritos do usuário',})
+  @ApiResponse({ status: 200, description: 'Post salvo nos favoritos do usuário', })
   @ApiOperation({ summary: 'Salva um post nos favoritos do usuário' })
   @Put(':userId/savePost/:postId')
   async savePostToSaved(
@@ -185,8 +225,9 @@ export class UsersController {
     }
   }
 
-
-  @ApiResponse({ status: 200, description: 'Post removido dos favoritos do usuário'})
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Post removido dos favoritos do usuário' })
   @ApiOperation({ summary: 'Remove um post dos favoritos do usuário' })
   @Put(':userId/removePost/:postId')
   async removePostFromSaved(
@@ -201,6 +242,43 @@ export class UsersController {
       throw new HttpException('Erro ao remover o post dos favoritos do usuário', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Usuário adicionado à lista de bloqueados' })
+  @ApiOperation({ summary: 'Adiciona um usuário à lista de bloqueados' })
+  @Put(':userId/addUserToBlockList/:blockUserId')
+  async addUserToBlockList(
+    @Param('userId') userId: string,
+    @Param('blockUserId') blockUserId: string,
+  ): Promise<UserModel> {
+    try {
+      const updatedUser = await this._usersService.addUserToBlockList(userId, blockUserId);
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error in addUserToBlockList controller: ${error.message}`);
+      throw new HttpException('Erro ao adicionar usuário à lista de bloqueados', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Usuário removido da lista de bloqueados' })
+  @ApiOperation({ summary: 'Remove um usuário da lista de bloqueados' })
+  @Put(':userId/removeUserFromBlockList/:unblockUserId')
+  async removeUserFromBlockList(
+    @Param('userId') userId: string,
+    @Param('unblockUserId') unblockUserId: string,
+  ): Promise<UserModel> {
+    try {
+      const updatedUser = await this._usersService.removeUserFromBlockList(userId, unblockUserId);
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error in removeUserFromBlockList controller: ${error.message}`);
+      throw new HttpException('Erro ao remover usuário da lista de bloqueados', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 
 
   @ApiBearerAuth()
@@ -226,7 +304,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'List all items' })
   @ApiOperation({ summary: 'List all items' })
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void>  {
+  async delete(@Param('id') id: string): Promise<void> {
     try {
       await this._usersService.deleteUser(id);
     } catch (err) {

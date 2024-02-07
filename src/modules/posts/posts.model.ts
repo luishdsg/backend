@@ -20,7 +20,7 @@ export const PostsSchema = new mongoose.Schema({
         },
       ],
       createdAt: { type: Date, default: Date.now },
-    }], required: false, default: 0
+    }], required: false, default: []
   },
   likes: [
     {
