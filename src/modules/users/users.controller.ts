@@ -95,6 +95,26 @@ export class UsersController {
   }
 
 
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({ status: 200, description: 'Lista de IDs de usuários favoritos' })
+  @ApiOperation({ summary: 'Obtém a lista de IDs de usuários favoritos paginada' })
+  @Get(':userId/favorites')
+  async getFavoriteUserIds(
+    @Param('userId') userId: string,
+    @Query('page') page: number = 1,
+  ): Promise<string[]> {
+    try {
+      const favoriteUserIds = await this._usersService.getFavoriteUserIds(userId, page);
+      return favoriteUserIds;
+    } catch (error) {
+      console.error(`Error in getFavoriteUserIds controller: ${error.message}`);
+      throw new HttpException('Erro ao obter a lista de IDs dos usuários favoritos', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'GEt following by username' })
@@ -113,30 +133,14 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiResponse({ status: 200, description: 'Lista de IDs de usuários bloqueados'})
   @ApiOperation({ summary: 'Obtém a lista de IDs de usuários bloqueados' })
-  @Get(':userId/blockedUserIds')
+  @Get(':userId/BlockedUsers')
   async getBlockedUserIds(@Param('userId') userId: string): Promise<string[]> {
     try {
-      const blockedUserIds = await this._usersService.getBlockedUserIds(userId);
+      const blockedUserIds = await this._usersService.getBlockedUsers(userId);
       return blockedUserIds;
     } catch (error) {
       console.error(`Error in getBlockedUserIds controller: ${error.message}`);
       throw new HttpException('Erro ao obter a lista de IDs de usuários bloqueados', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @ApiResponse({ status: 200, description: 'Lista de usuários bloqueados' })
-  @ApiOperation({ summary: 'Obtém a lista de usuários bloqueados' })
-  @Get(':userId/blockedUsers')
-  async getBlockedUsers(@Param('userId') userId: string): Promise<string[]> {
-    try {
-      const blockedUsers = await this._usersService.getBlockedUsers(userId);
-      return blockedUsers;
-    } catch (error) {
-      console.error(`Error in getBlockedUsers controller: ${error.message}`);
-      throw new HttpException('Erro ao obter a lista de usuários bloqueados', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

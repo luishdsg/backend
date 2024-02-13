@@ -84,6 +84,22 @@ export class UsersService {
   }
 
 
+  async getFavoriteUserIds(userId: string, page: number = 1): Promise<string[]> {
+    try {
+      const userGetFavoriteUserIds = await this._userModel.findById(userId);
+      if (!userGetFavoriteUserIds) throw new NotFoundException('Usuário não encontrado');
+      const pageSize = 10;
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
+      const favoriteUserIds = userGetFavoriteUserIds.favorites.slice(start, end).map(String);
+      return favoriteUserIds;
+    } catch (error) {
+      console.error(`Error in getFavoriteUserIds service: ${error.message}`);
+      throw new Error('Erro ao obter a lista de IDs dos usuários favoritos');
+    }
+  }
+
+
 
   async followUser(follower: string, followed: string): Promise<void> {
     try {
@@ -288,20 +304,6 @@ export class UsersService {
     } catch (error) {
       console.error(`Error in getBlockedUsers service: ${error.message}`);
       throw new Error('Erro ao obter a lista de usuários bloqueados');
-    }
-  }
-
-
-
-  async getBlockedUserIds(userId: string): Promise<string[]> {
-    try {
-      const userGetBlockedUserIds = await this._userModel.findById(userId);
-      if (!userGetBlockedUserIds) throw new NotFoundException('Usuário não encontrado');
-      const blockedUserIds = userGetBlockedUserIds.block.map(String);
-      return blockedUserIds;
-    } catch (error) {
-      console.error(`Error in getBlockedUserIds service: ${error.message}`);
-      throw new Error('Erro ao obter a lista de IDs de usuários bloqueados');
     }
   }
 
